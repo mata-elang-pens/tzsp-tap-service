@@ -42,7 +42,11 @@ MikroTik router --TZSP/UDP:37008--> tzsp-tap --> tap0 (promisc, up)
 - `git`, `make`, `gcc`, `libpcap-dev` — only needed for the bundled
   `tzsp2pcap` build
 
-## Install
+## How to implement
+
+### 1. Install the service (server side)
+
+On the Linux host that will receive the TZSP stream and own `tap0`:
 
 ```bash
 sudo ./install.sh
@@ -59,15 +63,38 @@ sudo systemctl status tzsp-tap
 ip link show tap0
 ```
 
-## Router-side setup
+`tap0` should show `UP` and `PROMISC` in its flags.
 
-On the MikroTik device, point its packet sniffer at this service's host
-and port:
+### 2. Point the router's sniffer at it
+
+On the MikroTik device, either via CLI:
 
 ```
 /tool sniffer set streaming-enabled=yes streaming-server=<this-host-ip>:37008
 /tool sniffer start
 ```
+
+or the WinBox GUI, under **Tools → Packet Sniffer → Streaming**: check
+**Streaming Enabled**, set **Server** to this host's IP and **Port** to
+`37008`, then **Apply**/**OK** and **Start** the sniffer.
+
+![MikroTik Packet Sniffer streaming settings](img/mikrotik-sniffer.png)
+
+**Filter Stream** (checked above, on the **Filter** tab) is optional —
+enable it to restrict what gets mirrored (by interface, address, port,
+etc.) if you don't want the router streaming *all* traffic it sees.
+
+### 3. Verify traffic is flowing
+
+```bash
+sudo tcpdump -i tap0 -c 10
+```
+
+You should see live frames matching what the router is sniffing. If
+nothing appears: confirm the router's sniffer status is `running` (not
+`stopped`, as in the screenshot above before **Start** is pressed),
+check `sudo journalctl -u tzsp-tap -f` for parse/write errors, and make
+sure UDP `37008` isn't blocked between the router and this host.
 
 ## Uninstall
 

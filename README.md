@@ -6,8 +6,10 @@ and injects the raw Ethernet frames into a local `tap0` interface — no
 extra software needed on the router itself, RouterOS mirrors traffic to
 this service natively.
 
-Built to feed a Snort/Suricata IDS research pipeline (Mata Elang) that
-needs every real packet on a host interface, not a summary or a sample.
+Built to feed a Snort/Suricata IDS research pipeline
+([Mata Elang](https://github.com/mata-elang-stable) —
+[mata-elang-pens](https://github.com/mata-elang-pens)) that needs every
+real packet on a host interface, not a summary or a sample.
 
 ## How it works
 
